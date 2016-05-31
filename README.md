@@ -1,4 +1,4 @@
-# HttpRouter [![Build Status](https://travis-ci.org/julienschmidt/httprouter.svg?branch=master)](https://travis-ci.org/julienschmidt/httprouter) [![Coverage](http://gocover.io/_badge/github.com/julienschmidt/httprouter?0)](http://gocover.io/github.com/julienschmidt/httprouter) [![GoDoc](https://godoc.org/github.com/julienschmidt/httprouter?status.svg)](http://godoc.org/github.com/julienschmidt/httprouter)
+# HttpRouter [![Build Status](https://travis-ci.org/mantyr/httprouter.svg?branch=master)](https://travis-ci.org/mantyr/httprouter) [![Coverage](http://gocover.io/_badge/github.com/mantyr/httprouter?0)](http://gocover.io/github.com/mantyr/httprouter) [![GoDoc](https://godoc.org/github.com/mantyr/httprouter?status.svg)](http://godoc.org/github.com/mantyr/httprouter)
 
 HttpRouter is a lightweight high performance HTTP request router (also called *multiplexer* or just *mux* for short) for [Go](https://golang.org/).
 
@@ -10,7 +10,7 @@ The router is optimized for high performance and a small memory footprint. It sc
 
 **Only explicit matches:** With other routers, like [`http.ServeMux`][http.ServeMux], a requested URL path could match multiple patterns. Therefore they have some awkward pattern priority rules, like *longest match* or *first registered, first matched*. By design of this router, a request can only match exactly one or no route. As a result, there are also no unintended matches, which makes it great for SEO and improves the user experience.
 
-**Stop caring about trailing slashes:** Choose the URL style you like, the router automatically redirects the client if a trailing slash is missing or if there is one extra. Of course it only does so, if the new path has a handler. If you don't like it, you can [turn off this behavior](https://godoc.org/github.com/julienschmidt/httprouter#Router.RedirectTrailingSlash).
+**Stop caring about trailing slashes:** Choose the URL style you like, the router automatically redirects the client if a trailing slash is missing or if there is one extra. Of course it only does so, if the new path has a handler. If you don't like it, you can [turn off this behavior](https://godoc.org/github.com/mantyr/httprouter#Router.RedirectTrailingSlash).
 
 **Path auto-correction:** Besides detecting the missing or additional trailing slash at no extra cost, the router can also fix wrong cases and remove superfluous path elements (like `../` or `//`). Is [CAPTAIN CAPS LOCK](http://www.urbandictionary.com/define.php?term=Captain+Caps+Lock) one of your users? HttpRouter can help him by making a case-insensitive look-up and redirecting him to the correct URL.
 
@@ -24,11 +24,11 @@ The router is optimized for high performance and a small memory footprint. It sc
 
 **Perfect for APIs:** The router design encourages to build sensible, hierarchical RESTful APIs. Moreover it has builtin native support for [OPTIONS requests](http://zacstewart.com/2012/04/14/http-options-method.html) and `405 Method Not Allowed` replies.
 
-Of course you can also set **custom [`NotFound`][Router.NotFound] and  [`MethodNotAllowed`](https://godoc.org/github.com/julienschmidt/httprouter#Router.MethodNotAllowed) handlers** and [**serve static files**][Router.ServeFiles].
+Of course you can also set **custom [`NotFound`][Router.NotFound] and  [`MethodNotAllowed`](https://godoc.org/github.com/mantyr/httprouter#Router.MethodNotAllowed) handlers** and [**serve static files**][Router.ServeFiles].
 
 ## Usage
 
-This is just a quick introduction, view the [GoDoc](http://godoc.org/github.com/julienschmidt/httprouter) for details.
+This is just a quick introduction, view the [GoDoc](http://godoc.org/github.com/mantyr/httprouter) for details.
 
 Let's start with a trivial example:
 
@@ -37,7 +37,7 @@ package main
 
 import (
     "fmt"
-    "github.com/julienschmidt/httprouter"
+    "github.com/mantyr/httprouter"
     "net/http"
     "log"
 )
@@ -52,8 +52,8 @@ func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func main() {
     router := httprouter.New()
-    router.GET("/", Index)
-    router.GET("/hello/:name", Hello)
+    router.Get("/", Index)
+    router.Get("/hello/:name", Hello)
 
     log.Fatal(http.ListenAndServe(":8080", router))
 }
@@ -164,8 +164,8 @@ func (hs HostSwitch) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// Initialize a router as usual
 	router := httprouter.New()
-	router.GET("/", Index)
-	router.GET("/hello/:name", Hello)
+	router.Get("/", Index)
+	router.Get("/hello/:name", Hello)
 
 	// Make a new HostSwitch and insert the router (our http handler)
 	// for example.com and port 12345
@@ -188,38 +188,38 @@ import (
     "bytes"
     "encoding/base64"
     "fmt"
-    "github.com/julienschmidt/httprouter"
+    "github.com/mantyr/httprouter"
     "net/http"
     "log"
     "strings"
 )
 
 func BasicAuth(h httprouter.Handle, user, pass []byte) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		const basicAuthPrefix string = "Basic "
+    return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+        const basicAuthPrefix string = "Basic "
 
-		// Get the Basic Authentication credentials
-		auth := r.Header.Get("Authorization")
-		if strings.HasPrefix(auth, basicAuthPrefix) {
-			// Check credentials
-			payload, err := base64.StdEncoding.DecodeString(auth[len(basicAuthPrefix):])
-			if err == nil {
-				pair := bytes.SplitN(payload, []byte(":"), 2)
-				if len(pair) == 2 &&
-					bytes.Equal(pair[0], user) &&
-					bytes.Equal(pair[1], pass) {
+        // Get the Basic Authentication credentials
+        auth := r.Header.Get("Authorization")
+        if strings.HasPrefix(auth, basicAuthPrefix) {
+            // Check credentials
+            payload, err := base64.StdEncoding.DecodeString(auth[len(basicAuthPrefix):])
+            if err == nil {
+                pair := bytes.SplitN(payload, []byte(":"), 2)
+                if len(pair) == 2 &&
+                    bytes.Equal(pair[0], user) &&
+                    bytes.Equal(pair[1], pass) {
 
-					// Delegate request to the given handle
-					h(w, r, ps)
-					return
-				}
-			}
-		}
+                    // Delegate request to the given handle
+                    h(w, r, ps)
+                    return
+                }
+            }
+        }
 
-		// Request Basic Authentication otherwise
-		w.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-	}
+        // Request Basic Authentication otherwise
+        w.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
+        http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+    }
 }
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -233,10 +233,10 @@ func Protected(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func main() {
     user := []byte("gordon")
     pass := []byte("secret!")
-    
+
     router := httprouter.New()
-    router.GET("/", Index)
-    router.GET("/protected/", BasicAuth(Protected, user, pass))
+    router.Get("/", Index)
+    router.Get("/protected/", BasicAuth(Protected, user, pass))
 
     log.Fatal(http.ListenAndServe(":8080", router))
 }
