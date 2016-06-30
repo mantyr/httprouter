@@ -78,6 +78,7 @@ package httprouter
 
 import (
 	"net/http"
+	"strconv"
 )
 
 // Handle is a function that can be registered to a route to handle HTTP
@@ -99,12 +100,30 @@ type Params []Param
 // ByName returns the value of the first Param which key matches the given name.
 // If no matching Param is found, an empty string is returned.
 func (ps Params) ByName(name string) string {
+    return ps.Get(name)
+}
+func (ps Params) Get(name string, params ...string) (v string) {
 	for i := range ps {
 		if ps[i].Key == name {
-			return ps[i].Value
+			v = ps[i].Value
+			break
 		}
 	}
-	return ""
+	if v == "" && len(params) > 0 {
+		return params[0]
+	}
+	return
+}
+
+func (ps Params) GetInt64(name string, params ...int64) (v int64) {
+    v, err := strconv.ParseInt(ps.Get(name), 10, 64)
+    if err != nil {
+        if len(params) > 0 {
+            return params[0]
+        }
+        return 0
+    }
+    return
 }
 
 // Router is a http.Handler which can be used to dispatch requests to different
